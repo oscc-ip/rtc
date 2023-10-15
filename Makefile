@@ -25,11 +25,11 @@ INC_LIST += -I ./tb
 
 comp:
 	@mkdir -p build
-	(cd build && $(SIM_TOOL) $(SIM_OPTIONS) $(FILE_LIST) $(INC_LIST) ../tb/$(SIM_TOP).sv -o $(SIMV_PROG) || exit -1) 2>&1 | tee ./build/compile.log
-
+	cd build && ($(SIM_TOOL) $(SIM_OPTIONS) $(FILE_LIST) $(INC_LIST) ../rtl/$(SIM_APP).sv ../tb/$(SIM_TOP).sv -o $(SIMV_PROG) || exit -1) 2>&1 | tee compile.log
 
 run: comp
 	cd build && $(RUN_TOOL) -l run.log -n $(SIMV_PROG) +$(TEST_ARGS) $(WAVE_FORMAT)
+
 clean:
 	rm -rf build
 
