@@ -10,6 +10,7 @@
 
 `include "register.sv"
 `include "clk_int_div.sv"
+`include "cdc_2phase.sv"
 `include "edge_det.sv"
 `include "rtc_define.sv"
 
@@ -30,30 +31,24 @@ module apb4_rtc (
   logic s_ov_en, s_alrm_en, s_tick_en;
   logic s_ov_irq_trg, s_alrm_irq_trg, s_tick_irq_trg;
   logic s_wr_pready, s_rd_pready, s_rtc_wr_valid;
-  logic s_wr_src_valid_d, s_wr_src_valid_q, s_wr_dst_valid;
+  logic s_wr_src_valid, s_wr_dst_valid;
+  logic s_rd_src_valid, s_rd_dst_valid;
   logic [`RTC_CNT_WIDTH-1:0] s_wr_dst_data, s_rd_dst_data;
-  logic s_rd_src_valid_d, s_rd_src_valid_q, s_rd_dst_valid;
 
-  assign s_apb4_addr     = apb4.paddr[5:2];
+
+  assign s_apb4_addr = apb4.paddr[5:2];
   assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
   assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
-  assign apb4.pslerr     = 1'b0;
+  assign apb4.pready = apb4.pwrite ? s_wr_pready : s_rd_pready;
+  assign apb4.pslverr = 1'b0;
 
-  assign s_normal_mode   = s_rtc_ctrl_q[4] & s_done;
-  assign s_ov_en         = s_rtc_ctrl_q[3];
-  assign s_alrm_en       = s_rtc_ctrl_q[2];
-  assign s_tick_en       = s_rtc_ctrl_q[1];
-  assign s_rtc_wr_valid  = s_rtc_ctrl_q[0] & s_rtc_ssta_q[1];
-  assign rtc.irq_o       = s_rtc_ista_q[0] | s_rtc_ista_q[1] | s_rtc_ista_q[2];
+  assign s_normal_mode = s_rtc_ctrl_q[4] & s_done;
+  assign s_ov_en = s_rtc_ctrl_q[3];
+  assign s_alrm_en = s_rtc_ctrl_q[2];
+  assign s_tick_en = s_rtc_ctrl_q[1];
+  assign s_rtc_wr_valid = s_rtc_ctrl_q[0] & s_rtc_ssta_q[1];
+  assign rtc.irq_o = s_rtc_ista_q[0] | s_rtc_ista_q[1] | s_rtc_ista_q[2];
 
-  always_comb begin
-    apb4.pready = 1'b1;
-    if (s_wr_src_valid_d) begin
-      apb4.pready = s_wr_pready && s_wr_src_valid_q;
-    end else if (s_rd_src_valid_d) begin
-      apb4.pready = s_rd_pready && s_rd_src_valid_q;
-    end
-  end
 
   assign s_rtc_ctrl_d = (s_apb4_wr_hdshk && s_apb4_addr == `RTC_CTRL) ? apb4.pwdata[`RTC_CTRL_WIDTH-1:0] : s_rtc_ctrl_q;
   dffr #(`RTC_CTRL_WIDTH) u_rtc_ctrl_dffr (
@@ -78,7 +73,7 @@ module apb4_rtc (
   );
 
   assign s_valid = s_apb4_wr_hdshk && s_apb4_addr == `RTC_PSCR && s_rtc_wr_valid && s_done;
-  clk_int_even_div_simple u_clk_int_even_div_simple (
+  clk_int_even_div_simple #(`RTC_PSCR_WIDTH) u_clk_int_even_div_simple (
       .clk_i      (rtc.rtc_clk_i),
       .rst_n_i    (rtc.rtc_rst_n_i),
       .div_i      (s_rtc_pscr_q),
@@ -88,18 +83,12 @@ module apb4_rtc (
       .clk_o      (s_tc_clk)
   );
 
-  assign s_wr_src_valid_d = s_apb4_wr_hdshk && s_apb4_addr == `RTC_CNT && s_rtc_wr_valid;
-  dffr #(1) u_wr_src_valid_dffr (
-      apb4.pclk,
-      apb4.presetn,
-      s_wr_src_valid_d,
-      s_wr_src_valid_q
-  );
+  assign s_wr_src_valid = s_apb4_wr_hdshk && s_apb4_addr == `RTC_CNT && s_rtc_wr_valid;
   cdc_2phase #(`RTC_CNT_WIDTH) u_wr_cdc_2phase (
       .src_clk_i  (apb4.pclk),
       .src_rst_n_i(apb4.presetn),
       .src_data_i (apb4.pwdata),
-      .src_valid_i(s_wr_src_valid_d),
+      .src_valid_i(s_wr_src_valid),
       .src_ready_o(s_wr_pready),
 
       .dst_clk_i  (rtc.rtc_clk_i),
@@ -109,22 +98,18 @@ module apb4_rtc (
       .dst_ready_i(1'b1)
   );
 
-  assign s_rd_src_valid_d = s_apb4_rd_hdshk && s_apb4_addr == `RTC_CNT;
-  dffr #(1) u_rd_src_valid_dffr (
-      apb4.pclk,
-      apb4.presetn,
-      s_rd_src_valid_d,
-      s_rd_src_valid_q
-  );
+  assign s_rd_src_valid = s_apb4_rd_hdshk && s_apb4_addr == `RTC_CNT;
+
+
   cdc_2phase #(`RTC_CNT_WIDTH) u_rd_cdc_2phase (
       .src_clk_i  (rtc.rtc_clk_i),
       .src_rst_n_i(rtc.rtc_rst_n_i),
       .src_data_i (s_rtc_cnt_q),
-      .src_valid_i(s_rd_src_valid_d),
+      .src_valid_i(s_rd_src_valid),
       .src_ready_o(s_rd_pready),
 
       .dst_clk_i  (apb4.pclk),
-      .dst_rst_n_i(abp4.presetn),
+      .dst_rst_n_i(apb4.presetn),
       .dst_data_o (s_rd_dst_data),
       .dst_valid_o(s_rd_dst_valid),
       .dst_ready_i(1'b1)

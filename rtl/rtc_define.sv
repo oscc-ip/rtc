@@ -57,7 +57,7 @@
 `define RTC_CNT_ADDR  {26'b0, `RTC_CNT , 2'b00}
 `define RTC_ALRM_ADDR {26'b0, `RTC_ALRM, 2'b00}
 `define RTC_ISTA_ADDR {26'b0, `RTC_ISTA, 2'b00}
-`define RTC_ISTA_ADDR {26'b0, `RTC_SSTA, 2'b00}
+`define RTC_SSTA_ADDR {26'b0, `RTC_SSTA, 2'b00}
 
 `define RTC_CTRL_WIDTH 5
 `define RTC_PSCR_WIDTH 20
