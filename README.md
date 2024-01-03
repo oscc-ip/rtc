@@ -4,7 +4,7 @@
 * Programmable prescaler
     * max division factor is up to 2^20
     * can be changed ongoing
-* 32-bit programmable rtc counter and alarm register
+* 32-bit programmable counter up rtc counter and alarm register
 * Register write-protected support
 * Register read-resynchronized support
 * Three maskable interrupt
