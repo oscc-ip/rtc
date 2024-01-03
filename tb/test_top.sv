@@ -40,6 +40,7 @@ program automatic test_top (
     rtc_hdl.test_wr_rd_reg();
     rtc_hdl.test_clk_div();
     rtc_hdl.test_inc_cnt();
+    rtc_hdl.test_wr_rd_cnt_reg();
     rtc_hdl.test_irq();
 
     Helper::end_banner();

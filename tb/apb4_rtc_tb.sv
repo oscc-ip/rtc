@@ -13,7 +13,7 @@
 
 module apb4_rtc_tb ();
   localparam CLK_PEROID = 10;
-  localparam RTC_CLK_PEROID = 22;  // for sim
+  localparam RTC_CLK_PEROID = 40;  // for sim
 
   logic rst_n_i, clk_i;
   logic rtc_rst_n_i, rtc_clk_i;
