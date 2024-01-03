@@ -17,17 +17,17 @@
  * FIELDS: | RES    | EN | OVIE | ALRMIE | SCIE | CMF |
  * PERMS:  | NONE   | RW | RW   | RW     | RW   | RW  |
  * ----------------------------------------------------
- * RTC_PSCR: WRITE-PROTECTED by LWOFF in CMF
+ * RTC_PSCR: WRITE-PROTECTED by LWOFF in CMF mode
  * BITS:   | 31:20 | 19:0 |
  * FIELDS: | RES   | PSCR |
  * PERMS:  | NONE  | RW   |
  * ----------------------------------------------------
- * RTC_CNT: WRITE-PROTECTED by LWOFF in CMF
+ * RTC_CNT: WRITE-PROTECTED by LWOFF in CMF mode
  * BITS:   | 31:0 |
  * FIELDS: | CNT  |
  * PERMS:  | RW   |
 * -----------------------------------------------------
- * RTC_ALRM: WRITE-PROTECTED by LWOFF in CMF
+ * RTC_ALRM: WRITE-PROTECTED by LWOFF in CMF mode
  * BITS:   | 31:0 |
  * FIELDS: | ALRM |
  * PERMS:  | RW   |
