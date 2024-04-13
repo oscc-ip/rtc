@@ -48,9 +48,25 @@ The `rtc(real time clock)` IP is a fully parameterised soft IP to generate the r
 
 reset value: `0x0000_0000`
 
-* EN: the enable signal for seed register writing operation.
-    * `EN = 1'b0`: writing seed register disabled
-    * `EN = 1'b1`: writing seed register enabled
+* EN: the enable signal for rtc counting mode
+    * `EN = 1'b0`: rtc counting disabled
+    * `EN = 1'b1`: rtc counting enabled
+
+* OVIE: the enable signal of overflow interrupt
+    * `OVIE = 1'b0`: overflow interrupt disabled
+    * `OVIE = 1'b1`: overflow interrupt enabled
+
+* ALRMIE: the enable signal of alarm interrupt
+    * `ALRMIE = 1'b0`: alarm interrupt disabled
+    * `ALRMIE = 1'b1`: alarm interrupt enabled
+
+* SCIE: the enable signal of second interrupt
+    * `SCIE = 1'b0`: second interrupt disabled
+    * `SCIE = 1'b1`: second interrupt enabled
+
+* CMF: the configure mode flag
+    * `CMF = 1'b0`: exit the configuare mode
+    * `CMF = 1'b1`: enter the configuare mode
 
 #### Prescaler Register
 | bit | access  | description |
@@ -60,7 +76,7 @@ reset value: `0x0000_0000`
 
 reset value: `0x0000_0000`
 
-* PSCR: the 32-bit initial random seed value.
+* PSCR: the 20-bit prescaler value
 
 #### Cnt Reigster
 | bit | access  | description |
@@ -69,7 +85,7 @@ reset value: `0x0000_0000`
 
 reset value: `0x0000_0000`
 
-* VAL: the 32-bit generated random number.
+* CNT: the 32-bit programmable counter
 
 #### Alarm Reigster
 | bit | access  | description |
@@ -78,7 +94,7 @@ reset value: `0x0000_0000`
 
 reset value: `0x0000_0000`
 
-* VAL: the 32-bit generated random number.
+* ALRM: the 32-bit alarm register
 
 #### Interrupt State Reigster
 | bit | access  | description |
@@ -90,7 +106,17 @@ reset value: `0x0000_0000`
 
 reset value: `0x0000_0000`
 
-* VAL: the 32-bit generated random number.
+* OVIF: the trigger flag of overflow interrupt
+    * `OVIF = 1'b0`: overflow interrupt flag no trigger
+    * `OVIF = 1'b1`: overflow interrupt flag trigger
+
+* ALRMIF: the trigger flag of alarm interrupt
+    * `ALRMIF = 1'b0`: alarm interrupt flag no trigger
+    * `ALRMIF = 1'b1`: alarm interrupt flag trigger
+
+* SCIF: the trigger flag of second interrupt
+    * `SCIF = 1'b0`: second interrupt flag no trigger
+    * `SCIF = 1'b1`: second interrupt flag trigger
 
 #### System State Reigster
 | bit | access  | description |
@@ -99,10 +125,10 @@ reset value: `0x0000_0000`
 | `[1:1]` | RO | LWOFF |
 | `[0:0]` | RO | RSYNF |
 
-
 reset value: `0x0000_0000`
 
-* VAL: the 32-bit generated random number.
+* LWOFF: the last write operation finished flag
+* RSYNF: the registers synchronized flag
 
 ### Program Guide
 The software operation of `rtc` is simple. These registers can be accessed by 4-byte aligned read and write. All operation can be split into **initialization and read operation**. C-like pseudocode for the initialization operation:
