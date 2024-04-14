@@ -26,12 +26,11 @@ The `rtc(real time clock)` IP is a fully parameterised soft IP to generate the r
 | `rtc.rtc_rst_n_i` | input | rtc reset input |
 
 ### Register
-
 | name | offset  | length | description |
 |:----:|:-------:|:-----: | :---------: |
 | [CTRL](#control-register) | 0x0 | 4 | control register |
 | [PSCR](#prescaler-register) | 0x4 | 4 | prescaler register |
-| [CNT](#cnt-reigster) | 0x8 | 4 | counter register |
+| [CNT](#counter-reigster) | 0x8 | 4 | counter register |
 | [ALRM](#alarm-reigster) | 0xC | 4 | alarm register |
 | [ISTA](#interrupt-state-reigster) | 0x10 | 4 | interrupt state register |
 | [SSTA](#system-state-reigster) | 0x14 | 4 | system state register |
@@ -74,11 +73,11 @@ reset value: `0x0000_0000`
 | `[31:20]` | none | reserved |
 | `[19:0]` | RW | PSCR |
 
-reset value: `0x0000_0000`
+reset value: `0x0000_0002`
 
 * PSCR: the 20-bit prescaler value
 
-#### Cnt Reigster
+#### Counter Reigster
 | bit | access  | description |
 |:---:|:-------:| :---------: |
 | `[31:0]` | RW | CNT |
@@ -131,19 +130,19 @@ reset value: `0x0000_0000`
 * RSYNF: the registers synchronized flag
 
 ### Program Guide
-The software operation of `rtc` is simple. These registers can be accessed by 4-byte aligned read and write. All operation can be split into **initialization and read operation**. C-like pseudocode for the initialization operation:
+These registers can be accessed by 4-byte aligned read and write. C-like pseudocode:
+
+init operation:
 ```c
-rtc.CTRL.EN = 1        // enable the seed register writing
-rtc.SEED = SEED_32_bit // write seed value
+rtc.CTRL.CMF = 1       // enable the config mode
+rtc.PSCR = PSCR_32_bit // set the pscr value
+rtc.CNT = CNT_32_bit   // set the init counter value
+rtc.CTRL.CMF = 0       // disable the config mode
+rtc.CTRL.[EN, OVIE, ALRMIE, SCIE] = 1 // enable counter and interrupt
 ```
 read operation:
 ```c
-uint32_t val = rtc.VAL // get the random number
-```
-
-If wanting to stop generating valid random numbers, software need to set the value of seed register to zero:
-```c
-rtc.SEED = 0x0
+uint32_t val = rtc.CNT // get the cnt value
 ```
 ### Resoureces
 ### References
