@@ -46,6 +46,20 @@ module apb4_rtc (
   assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
   assign apb4.pslverr    = 1'b0;
 
+  assign s_bit_cmf       = s_rtc_ctrl_q[0];
+  assign s_bit_scie      = s_rtc_ctrl_q[1];
+  assign s_bit_alrmie    = s_rtc_ctrl_q[2];
+  assign s_bit_ovie      = s_rtc_ctrl_q[3];
+  assign s_bit_en        = s_rtc_ctrl_q[4];
+  assign s_bit_scif      = s_rtc_ista_q[0];
+  assign s_bit_alrmif    = s_rtc_ista_q[1];
+  assign s_bit_ovif      = s_rtc_ista_q[2];
+  assign s_bit_rsynf     = s_rtc_ssta_q[0];
+  assign s_bit_lwoff     = s_rtc_ssta_q[1];
+  assign s_normal_mode   = s_bit_en & s_done_sync;
+  assign s_rtc_wr_valid  = s_bit_cmf & s_bit_lwoff;
+  assign rtc.irq_o       = |s_rtc_ista_q;
+
   edge_det_re #(
       .STAGE     (2),
       .DATA_WIDTH(1)
@@ -75,22 +89,8 @@ module apb4_rtc (
     end
   end
 
-  assign s_bit_cmf      = s_rtc_ctrl_q[0];
-  assign s_bit_scie     = s_rtc_ctrl_q[1];
-  assign s_bit_alrmie   = s_rtc_ctrl_q[2];
-  assign s_bit_ovie     = s_rtc_ctrl_q[3];
-  assign s_bit_en       = s_rtc_ctrl_q[4];
-  assign s_bit_scif     = s_rtc_ista_q[0];
-  assign s_bit_alrmif   = s_rtc_ista_q[1];
-  assign s_bit_ovif     = s_rtc_ista_q[2];
-  assign s_bit_rsynf    = s_rtc_ssta_q[0];
-  assign s_bit_lwoff    = s_rtc_ssta_q[1];
-  assign s_normal_mode  = s_bit_en & s_done_sync;
-  assign s_rtc_wr_valid = s_bit_cmf & s_bit_lwoff;
-  assign rtc.irq_o      = |s_rtc_ista_q;
-
-  assign s_rtc_ctrl_en  = s_apb4_wr_hdshk && s_apb4_addr == `RTC_CTRL;
-  assign s_rtc_ctrl_d   = s_rtc_ctrl_en ? apb4.pwdata[`RTC_CTRL_WIDTH-1:0] : s_rtc_ctrl_q;
+  assign s_rtc_ctrl_en = s_apb4_wr_hdshk && s_apb4_addr == `RTC_CTRL;
+  assign s_rtc_ctrl_d  = apb4.pwdata[`RTC_CTRL_WIDTH-1:0];
   dffer #(`RTC_CTRL_WIDTH) u_rtc_ctrl_dffer (
       apb4.pclk,
       apb4.presetn,
@@ -202,7 +202,7 @@ module apb4_rtc (
   );
 
   assign s_rd_dst_tmp_en = s_rd_dst_valid;
-  assign s_rd_dst_tmp_d  = s_rd_dst_tmp_en ? s_rd_dst_data : s_rd_dst_tmp_q;
+  assign s_rd_dst_tmp_d  = s_rd_dst_data;
   dffer #(`RTC_CNT_WIDTH) u_rd_dst_tmp_dffer (
       apb4.pclk,
       apb4.presetn,
@@ -229,7 +229,7 @@ module apb4_rtc (
   );
 
   assign s_rtc_alrm_en = s_apb4_wr_hdshk && s_apb4_addr == `RTC_ALRM && s_rtc_wr_valid;
-  assign s_rtc_alrm_d  = s_rtc_alrm_en ? apb4.pwdata[`RTC_ALRM_WIDTH-1:0] : s_rtc_alrm_q;
+  assign s_rtc_alrm_d  = apb4.pwdata[`RTC_ALRM_WIDTH-1:0];
   dffer #(`RTC_ALRM_WIDTH) u_rtc_alrm_dffer (
       apb4.pclk,
       apb4.presetn,
