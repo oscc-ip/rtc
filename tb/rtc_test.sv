@@ -41,7 +41,7 @@ task automatic RTCTest::test_reset_reg();
   super.test_reset_reg();
   // verilog_format: off
   this.rd_check(`RTC_CTRL_ADDR, "CTRL REG", 32'b0 & {`RTC_CTRL_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
-  this.rd_check(`RTC_PSCR_ADDR, "PSCR REG", 32'd2 & {`RTC_PSCR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
+  this.rd_check(`RTC_PSCR_ADDR, "PSCR REG", 32'b0 & {`RTC_PSCR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`RTC_ALRM_ADDR, "ALRM REG", 32'b0 & {`RTC_ALRM_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`RTC_ISTA_ADDR, "ISTA REG", 32'b0 & {`RTC_ISTA_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`RTC_SSTA_ADDR, "SSTA REG", 32'b10 & {`RTC_SSTA_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
@@ -61,28 +61,27 @@ task automatic RTCTest::test_wr_rd_reg(input bit [31:0] run_times = 1000);
 endtask
 
 task automatic RTCTest::test_clk_div(input bit [31:0] run_times = 10);
-  $display("=== [test rtc clk div] ===");
+  $display("%t === [test rtc clk div] ===", $time);
   repeat (200) @(posedge this.apb4.pclk);
   this.write(`RTC_CTRL_ADDR, 32'b0 & {`RTC_CTRL_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
   this.write(`RTC_CTRL_ADDR, 32'b1 & {`RTC_CTRL_WIDTH{1'b1}});  // enter cmf mode
-  this.write(`RTC_PSCR_ADDR, 32'd10 & {`RTC_PSCR_WIDTH{1'b1}});
-  repeat (200) @(posedge this.apb4.pclk);
-  this.write(`RTC_PSCR_ADDR, 32'd4 & {`RTC_PSCR_WIDTH{1'b1}});
-  repeat (200) @(posedge this.apb4.pclk);
+  this.write(`RTC_PSCR_ADDR, 32'd9 & {`RTC_PSCR_WIDTH{1'b1}});
+  repeat (1000) @(posedge this.apb4.pclk);
+  this.write(`RTC_PSCR_ADDR, 32'd3 & {`RTC_PSCR_WIDTH{1'b1}});
+  repeat (1000) @(posedge this.apb4.pclk);
   for (int i = 0; i < run_times; i++) begin
     this.wr_val = ($random % 20) & {`RTC_PSCR_WIDTH{1'b1}};
-    if (this.wr_val < 2) this.wr_val = 2;
-    if (this.wr_val % 2) this.wr_val -= 1;
     this.wr_rd_check(`RTC_PSCR_ADDR, "PSCR REG", this.wr_val, Helper::EQUL);
-    repeat (500) @(posedge this.apb4.pclk);
+    repeat (1000) @(posedge this.apb4.pclk);
+
   end
 endtask
 
 task automatic RTCTest::test_inc_cnt(input bit [31:0] run_times = 10);
-  $display("=== [test rtc inc cnt] ===");
+  $display("%t === [test rtc inc cnt] ===", $time);
   this.write(`RTC_CTRL_ADDR, 32'b1 & {`RTC_CTRL_WIDTH{1'b1}});
-  this.write(`RTC_PSCR_ADDR, 32'd4 & {`RTC_PSCR_WIDTH{1'b1}});
+  this.write(`RTC_PSCR_ADDR, 32'd3 & {`RTC_PSCR_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
   this.write(`RTC_ALRM_ADDR, 32'h2FF & {`RTC_ALRM_WIDTH{1'b1}});
   this.write(`RTC_CTRL_ADDR, 32'b1_0000 & {`RTC_CTRL_WIDTH{1'b1}});
@@ -90,9 +89,9 @@ task automatic RTCTest::test_inc_cnt(input bit [31:0] run_times = 10);
 endtask
 
 task automatic RTCTest::test_wr_rd_cnt_reg(input bit [31:0] run_times = 10);
-  $display("=== [test rtc wr or rd cnt reg] ===");
+  $display("%t === [test rtc wr or rd cnt reg] ===", $time);
   this.write(`RTC_CTRL_ADDR, 32'b1 & {`RTC_CTRL_WIDTH{1'b1}});
-  this.write(`RTC_PSCR_ADDR, 32'd6 & {`RTC_PSCR_WIDTH{1'b1}});
+  this.write(`RTC_PSCR_ADDR, 32'd5 & {`RTC_PSCR_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
   for (int i = 0; i < run_times; i++) begin
     this.wr_val = $random & {`RTC_CNT_WIDTH{1'b1}};
@@ -105,10 +104,11 @@ endtask
 
 task automatic RTCTest::test_irq(input bit [31:0] run_times = 10);
   super.test_irq();
+  $display("%t", $time);
   this.wr_val = 32'hE;
   this.read(`RTC_ISTA_ADDR);
   this.write(`RTC_CTRL_ADDR, 32'b1 & {`RTC_CTRL_WIDTH{1'b1}});
-  this.write(`RTC_PSCR_ADDR, 32'd4 & {`RTC_PSCR_WIDTH{1'b1}});
+  this.write(`RTC_PSCR_ADDR, 32'd3 & {`RTC_PSCR_WIDTH{1'b1}});
   repeat (200) @(posedge this.apb4.pclk);
   this.write(`RTC_ALRM_ADDR, this.wr_val & {`RTC_ALRM_WIDTH{1'b1}});
   this.write(`RTC_CNT_ADDR, 32'b0 & {`RTC_CNT_WIDTH{1'b1}});
