@@ -26,6 +26,7 @@ module apb4_rtc (
   logic [`RTC_PSCR_WIDTH-1:0] s_rtc_pscr_d, s_rtc_pscr_q;
   logic s_rtc_pscr_en;
   logic [`RTC_CNT_WIDTH-1:0] s_rtc_cnt_d, s_rtc_cnt_q;
+  logic s_rtc_cnt_en;
   logic [`RTC_ALRM_WIDTH-1:0] s_rtc_alrm_d, s_rtc_alrm_q;
   logic s_rtc_alrm_en;
   logic [`RTC_ISTA_WIDTH-1:0] s_rtc_ista_d, s_rtc_ista_q;
