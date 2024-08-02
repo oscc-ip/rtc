@@ -144,6 +144,8 @@ read operation:
 ```c
 uint32_t val = rtc.CNT // get the cnt value
 ```
+complete driver and test codes in [driver](../driver/) dir. 
+
 ### Resoureces
 ### References
 ### Revision History
