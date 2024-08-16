@@ -140,7 +140,8 @@ module apb4_rtc (
       .div_valid_i(s_valid),
       .div_ready_o(),
       .div_done_o (s_done),
-      .clk_trg_o  (s_tc_trg)
+      .clk_trg_o  (s_tc_trg),
+      .clk_o      ()
   );
 
   assign s_wr_src_valid = s_apb4_wr_hdshk && s_apb4_addr == `RTC_CNT && s_rtc_wr_valid;
