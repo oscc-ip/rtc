@@ -134,15 +134,17 @@ module apb4_rtc (
       .dst_ready_i(1'b1)
   );
   clk_int_div_simple #(`RTC_PSCR_WIDTH) u_clk_int_div_simple (
-      .clk_i      (rtc.rtc_clk_i),
-      .rst_n_i    (rtc.rtc_rst_n_i),
-      .div_i      (s_rtc_pscr_q),
-      .div_valid_i(s_valid),
-      .div_ready_o(),
-      .div_done_o (s_done),
-      .clk_cnt_o  (),
-      .clk_trg_o  (s_tc_trg),
-      .clk_o      ()
+      .clk_i        (rtc.rtc_clk_i),
+      .rst_n_i      (rtc.rtc_rst_n_i),
+      .div_i        (s_rtc_pscr_q),
+      .clk_init_i   (1'b0),
+      .div_valid_i  (s_valid),
+      .div_ready_o  (),
+      .div_done_o   (s_done),
+      .clk_cnt_o    (),
+      .clk_fir_trg_o(),
+      .clk_sec_trg_o(s_tc_trg),
+      .clk_o        ()
   );
 
   assign s_wr_src_valid = s_apb4_wr_hdshk && s_apb4_addr == `RTC_CNT && s_rtc_wr_valid;
